@@ -1,6 +1,9 @@
-int get_passwd();
+#include <stdio.h>
+
+extern int get_passwd();
 
 int main() {
-  get_passwd();
+  int result = get_passwd();
+  printf("The password is: %d\n", result);
   return 0;
 }
