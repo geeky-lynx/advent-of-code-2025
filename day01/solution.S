@@ -1,7 +1,7 @@
 .section .data
-filename: .ascii "input.txt\0"
-filemode: .ascii "r\0"
-format: .ascii "%c%d\n\0"
+filename: .string "input.txt"
+filemode: .string "r"
+format: .string "%c%d\n"
 file: .quad 0
 direction: .byte 'R'
 offset: .long 0
@@ -22,24 +22,63 @@ get_passwd:
         movq $filemode, %rsi
         movq $filename, %rdi
         call fopen
-        testl %eax, %eax
+        testq %rax, %rax
         jz failure_nofile
-        movl %eax, file
+        movq %rax, file(%rip)
 
 
 
 loop:
         // Godbolt reference for fscanf call
         // res_eax = fscanf(file, format, &direction, &offset) orelse goto success
+        // it aint working :skull:
+        // movl $offset, %ecx
+        // movl $direction, %edx
+        // movl format, %esi
+        // movq file(%rip), %rdi
+        // movl $0, %eax // idk why does it compile with it
+        // call __isoc99_fscanf
+        // movl %eax, %return_val
+        movq file(%rip), %rax
+        movl $offset, %edx
+        movl $direction, %esi
+        movq %rax, %rdi
+        call read_from_file
+
+        // Is it the end?
         cmpl $0, %eax
         jbe success
 
 loop_body:
-        // Increment counter if cursor == 0
-        testl cursor, cursor
-        caddzl $1, counter // doesn't exist
+        movl $cursor, %ebx
+        // What kind of operand?
+        cmpb $'L', direction
+        je shall_reduce
+
+        // Adding it is ('R')
+        addl $offset, %ebx
+        cmpl $100, %ebx
+        jle is_zero_for_inc // goto ... if > 100
+        subl $100, %ebx
+        jmp is_zero_for_inc
+
+shall_reduce:
+        // Subtracting it is ('L')
+        subl $offset, %ebx
+        cmpl $0, %ebx
+        jg is_zero_for_inc
+        addl $100, %ebx
         
+
+is_zero_for_inc:
+        // Increment counter if cursor == 0
+        testl %ebx, %ebx
+        jnz no_hit_zero
+        incl counter
+no_hit_zero:
+        movl %ebx, cursor
         jmp loop
+
 
 
 success:
