@@ -1,10 +1,6 @@
 .section .data
-filename: .string "input.txt"
-filemode: .string "r"
-format: .string "%c%d\n"
-file: .quad 0
-direction: .byte 'R'
-offset: .long 0
+direction: .byte 'n'
+offset: .long 69420
 cursor: .long 50
 counter: .long 0
 
@@ -17,17 +13,6 @@ get_passwd:
         // pushl %ebp
         // movl %esp, %ebp
 
-        // Godbolt reference for fopen call
-        // file = fopen(filename, filemode) orelse return -1
-        movq $filemode, %rsi
-        movq $filename, %rdi
-        call fopen
-        testq %rax, %rax
-        jz failure_nofile
-        movq %rax, file(%rip)
-
-
-
 loop:
         // Godbolt reference for fscanf call
         // res_eax = fscanf(file, format, &direction, &offset) orelse goto success
@@ -39,10 +24,9 @@ loop:
         // movl $0, %eax // idk why does it compile with it
         // call __isoc99_fscanf
         // movl %eax, %return_val
-        movq file(%rip), %rax
-        movl $offset, %edx
-        movl $direction, %esi
-        movq %rax, %rdi
+
+        movl $offset, %esi
+        movl $direction, %edi
         call read_from_file
 
         // Is it the end?
@@ -83,8 +67,8 @@ no_hit_zero:
 
 success:
         // Godbolt reference for fclose call
-        movq $file, %rdi
-        call fclose
+        // movq $file, %rdi
+        // call fclose
         movl $counter, %eax
         ret
 
