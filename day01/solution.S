@@ -5,13 +5,14 @@ cursor: .long 50
 counter: .long 0
 
 .global get_passwd
+.global read_from_file
 
 .section .text
 
 get_passwd:
         // Set up the stack:
-        // pushl %ebp
-        // movl %esp, %ebp
+        pushq %rbp
+        movq %rsp, %rbp
 
 loop:
         // Godbolt reference for fscanf call
@@ -31,7 +32,7 @@ loop:
 
         // Is it the end?
         cmpl $0, %eax
-        jbe success
+        jle success
 
 loop_body:
         movl $cursor, %ebx
@@ -69,11 +70,13 @@ success:
         // Godbolt reference for fclose call
         // movq $file, %rdi
         // call fclose
-        movl $counter, %eax
+        movl counter, %eax
+        popq %rbp
         ret
 
 
 
 failure_nofile:
         movl $-1, %eax
+        popq %rbp
         ret
