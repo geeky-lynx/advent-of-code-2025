@@ -29,18 +29,23 @@ loop_body:
 
         // Adding it is ('R')
         addl offset, %ebx
+
+fix_overflow:
         cmpl $100, %ebx
         // jl - jump if less than op1
         jl is_zero_for_inc  // goto ... if < 100
         subl $100, %ebx     // if >= 100: %ebx -= 100
-        jmp is_zero_for_inc
+        jmp fix_overflow
 
 shall_reduce:
         // Subtracting it is ('L')
         subl offset, %ebx
+
+fix_underflow:
         cmpl $0, %ebx
         jge is_zero_for_inc // goto ... if %ebx >= 0
         addl $100, %ebx     // if < 0: %ebx += 100
+        jmp fix_underflow
         
 
 is_zero_for_inc:
