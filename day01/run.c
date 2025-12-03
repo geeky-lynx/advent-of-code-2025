@@ -18,8 +18,12 @@ extern int read_from_file(char* p_direction, int* p_offset) {
   return r;
 }
 
-int main() {
-  s_file = fopen("input.txt", "r");
+int main(int argc, char **argv) {
+  if (argc != 2) {
+    printf(".txt source is needed\n");
+    return -2;
+  }
+  s_file = fopen(argv[1], "r");
   if (s_file == NULL) {
     printf("Error opening a file\n");
     return -1;

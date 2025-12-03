@@ -15,44 +15,32 @@ get_passwd:
         movq %rsp, %rbp
 
 loop:
-        // Godbolt reference for fscanf call
-        // res_eax = fscanf(file, format, &direction, &offset) orelse goto success
-        // it aint working :skull:
-        // movl $offset, %ecx
-        // movl $direction, %edx
-        // movl format, %esi
-        // movq file(%rip), %rdi
-        // movl $0, %eax // idk why does it compile with it
-        // call __isoc99_fscanf
-        // movl %eax, %return_val
-
         movl $offset, %esi
         movl $direction, %edi
         call read_from_file
 
-        // Is it the end?
         cmpl $0, %eax
-        jle success
+        jle success        // Stop the loop
 
 loop_body:
-        movl $cursor, %ebx
-        // What kind of operand?
+        movl cursor, %ebx  // %ebx is what I'll use to check cursor
         cmpb $'L', direction
-        je shall_reduce
+        je shall_reduce    // goto Subtract operation
 
         // Adding it is ('R')
-        addl $offset, %ebx
+        addl offset, %ebx
         cmpl $100, %ebx
-        jle is_zero_for_inc // goto ... if > 100
-        subl $100, %ebx
+        // jl - jump if less than op1
+        jl is_zero_for_inc  // goto ... if < 100
+        subl $100, %ebx     // if >= 100: %ebx -= 100
         jmp is_zero_for_inc
 
 shall_reduce:
         // Subtracting it is ('L')
-        subl $offset, %ebx
+        subl offset, %ebx
         cmpl $0, %ebx
-        jg is_zero_for_inc
-        addl $100, %ebx
+        jge is_zero_for_inc // goto ... if %ebx >= 0
+        addl $100, %ebx     // if < 0: %ebx += 100
         
 
 is_zero_for_inc:
@@ -60,6 +48,8 @@ is_zero_for_inc:
         testl %ebx, %ebx
         jnz no_hit_zero
         incl counter
+        // incl %ebx
+        // movl %ebx, cursor
 no_hit_zero:
         movl %ebx, cursor
         jmp loop
